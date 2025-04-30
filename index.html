@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="manifest" href="manifest.json">
+
+</head>
+<body>
+    
+</body>
+<html>
+<head>
+<title>Smart Trade Calculator</title>
+<style>
+  body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+  h1 { color: #333; }
+  input[type="number"], input[type="text"] {
+    padding: 5px; margin: 5px 0; width: 100%; max-width: 300px;
+  }
+  input[type="button"] {
+    background-color: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; width: 100%; max-width: 300px;
+  }
+  input[type="button"]:hover { background-color: #45a049; }
+  .results {
+    background-color: rgba(226, 226, 226, 0.7);
+    padding: 10px; margin-top: 20px; border-radius: 8px;
+  }
+  .result-item { font-size: 18px; }
+  #copy-btn { margin-top: 10px; background-color: #007bff; }
+  #copy-btn:hover { background-color: #0056b3; }
+</style>
+</head>
+<body>
+
+<h1>Smart Trade Calculator 🧬</h1>
+
+<form>
+  <label for="pair">Pair (optional):</label><br>
+  <input type="text" id="pair" name="pair" placeholder="XAUUSD, BTCUSD"><br><br>
+
+  <label for="entry">Entry Price:</label><br>
+  <input type="number" id="entry" name="entry" step="0.0001"><br><br>
+
+  <label for="sl">Stop Loss:</label><br>
+  <input type="number" id="sl" name="sl" step="0.0001"><br><br>
+
+  <label for="tp1">Take Profit 1:</label><br>
+  <input type="number" id="tp1" name="tp1" step="0.0001"><br><br>
+
+  <label for="tp2">Take Profit 2 (optional):</label><br>
+  <input type="number" id="tp2" name="tp2" step="0.0001"><br><br>
+
+  <label for="tp3">Take Profit 3 (optional):</label><br>
+  <input type="number" id="tp3" name="tp3" step="0.0001"><br><br>
+
+  <label for="risk">Risk Amount ($):</label><br>
+  <input type="number" id="risk" name="risk" value="20"><br><br>
+
+  <input type="button" value="Calculate" onclick="calculate()">
+</form>
+
+<h2>Results:</h2>
+<div class="results" id="results">
+  <p class="result-item">SL Distance: <span id="slDistance"></span></p>
+  <p class="result-item">Lot Size: <span id="lotSize"></span></p>
+  <p class="result-item">TP1 Distance: <span id="tp1Distance"></span></p>
+  <p class="result-item">TP2 Distance: <span id="tp2Distance"></span></p>
+  <p class="result-item">TP3 Distance: <span id="tp3Distance"></span></p>
+  <p class="result-item">Average RRR: <span id="avgRRR"></span></p>
+  <p class="result-item"><strong>Trade Direction:</strong> <span id="tradeDirection"></span></p>
+  <button id="copy-btn" onclick="copyResults()">Copy Results</button>
+</div>
+
+<script>
+function calculate() {
+  let entry = parseFloat(document.getElementById('entry').value);
+  let sl = parseFloat(document.getElementById('sl').value);
+  let tp1 = parseFloat(document.getElementById('tp1').value);
+  let tp2 = parseFloat(document.getElementById('tp2').value || 0);
+  let tp3 = parseFloat(document.getElementById('tp3').value || 0);
+  let risk = parseFloat(document.getElementById('risk').value);
+
+  let direction = (entry < tp1) ? "BUY" : "SELL";
+
+  let slDistance = Math.abs(entry - sl);
+  let tp1Distance = Math.abs(entry - tp1);
+  let tp2Distance = Math.abs(entry - tp2);
+  let tp3Distance = Math.abs(entry - tp3);
+
+  let lotSize = (risk / slDistance) / 10;
+
+  let rr1 = tp1Distance / slDistance;
+  let rr2 = tp2Distance ? tp2Distance / slDistance : 0;
+  let rr3 = tp3Distance ? tp3Distance / slDistance : 0;
+
+  let avgRRR = (tp2Distance && tp3Distance) ? (rr1 + rr2 + rr3) / 3 : rr1;
+
+  document.getElementById('slDistance').innerText = slDistance.toFixed(4);
+  document.getElementById('lotSize').innerText = lotSize.toFixed(2);
+  document.getElementById('tp1Distance').innerText = tp1Distance.toFixed(4);
+  document.getElementById('tp2Distance').innerText = tp2Distance ? tp2Distance.toFixed(4) : "-";
+  document.getElementById('tp3Distance').innerText = tp3Distance ? tp3Distance.toFixed(4) : "-";
+  document.getElementById('avgRRR').innerText = avgRRR.toFixed(2);
+  document.getElementById('tradeDirection').innerText = direction;
+}
+
+function copyResults() {
+  let resultsText = `
+SL Distance: ${document.getElementById('slDistance').innerText}
+Lot Size: ${document.getElementById('lotSize').innerText}
+TP1 Distance: ${document.getElementById('tp1Distance').innerText}
+TP2 Distance: ${document.getElementById('tp2Distance').innerText}
+TP3 Distance: ${document.getElementById('tp3Distance').innerText}
+Average RRR: ${document.getElementById('avgRRR').innerText}
+Trade Direction: ${document.getElementById('tradeDirection').innerText}
+`;
+
+  navigator.clipboard.writeText(resultsText).then(function() {
+    alert("Results copied to clipboard!");
+  }, function() {
+    alert("Failed to copy results.");
+  });
+}
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(function(registration) {
+      console.log('Service Worker registered with scope:', registration.scope);
+    })
+    .catch(function(error) {
+      console.log('Service Worker registration failed:', error);
+    });
+}
+</script>
+
+</body>
+</html>
